@@ -80,7 +80,7 @@ REVIEW_HOST_RE = re.compile(
 # form and is a real call to action; a bare "#" is not.
 NAV_LIKE = re.compile(r"^(#$|/?$|/(about|blog|docs|pricing|login|privacy|terms|contact)"
                       r"|mailto:|tel:|https?://(www\.)?(twitter\.com|x\.com|facebook\.com|"
-                      r"linkedin\.com|instagram\.com|github\.com|youtube\.com|threads\.net|"
+                      r"linkedin\.com|instagram\.com|github\.com|youtube\.com|threads\.(net|com)|"
                       r"tiktok\.com|t\.me|discord\.(gg|com)|bsky\.app|reddit\.com|"
                       r"medium\.com|line\.me|wa\.me))", re.I)
 
