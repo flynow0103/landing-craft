@@ -16,6 +16,20 @@ or referenced while writing this repository.** The subject matter overlaps
 because the underlying design ideas are common knowledge in the field; the
 expression here is original.
 
+## Format conventions
+
+The constraint list in `SKILL.md` uses MUST / NEVER / SHOULD bullets grouped by
+topic. That is the RFC 2119 requirement-level vocabulary, and the same layout
+is used by several public agent-skill repositories (ibelick/ui-skills, MIT, is
+one). The layout was looked at for its shape only. No rule, sentence, or
+example in this repository was taken from it or from any other skill; the
+rules here are about landing pages and were written for this file.
+
+`references/starting-points.md` points readers at PaulleDemon/awesome-landing-
+pages (MIT) as a place to find free templates. Nothing from that repository is
+vendored here; it is referenced by name and URL, and the evaluation method for
+templates is this project's own.
+
 ## What is referenced rather than reproduced
 
 The guidance cites publicly documented standards and facts. These are referred

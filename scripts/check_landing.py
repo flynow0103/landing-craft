@@ -13,6 +13,9 @@ No third-party dependencies. Python 3.8+.
 
 Exit code 1 when a P0 finding is present, so it can gate a build.
 
+The checks weight the four places conversion is decided: the headline, the
+fold, the call to action, and the proof. Everything else is mechanics.
+
 What it cannot see: whether the promise is true, whether the offer is any
 good, whether the visitor came from an ad that said something different, and
 anything the browser computes at runtime. A clean run means the mechanics are
@@ -62,6 +65,25 @@ PLACEHOLDER_IMG = ["placehold.co", "placeholder.com", "via.placeholder",
 STAT_RE = re.compile(r"\b\d[\d,.]*\s?(%|x\b|倍|％)", re.I)
 CITE_NEAR_RE = re.compile(r"(source|據|資料來源|based on|n\s*=|sample|methodology|<cite)", re.I)
 
+# Proof shaped like a crowd: a star rating, a star row, or a count of people.
+CROWD_RE = re.compile(
+    r"(\b[0-5](?:\.\d)?\s*/\s*5\b|[★⭐]{2,}|"
+    r"\b\d[\d,.]*\s?[kKmM]?\+?\s*(?:reviews?|ratings?|customers?|users?|companies|"
+    r"teams?|developers?|subscribers?|downloads?|clients?|members?|"
+    r"位用戶|名用戶|家企業|家公司|則評價|個團隊))", re.I)
+# A rating that links to where it lives is sourced.
+REVIEW_HOST_RE = re.compile(
+    r'href=["\'][^"\']*(trustpilot|g2\.com|capterra|producthunt|apps\.apple|play\.google|'
+    r'review|testimonial)', re.I)
+
+# Targets that are navigation, not the conversion action. "#start" jumps to the
+# form and is a real call to action; a bare "#" is not.
+NAV_LIKE = re.compile(r"^(#$|/?$|/(about|blog|docs|pricing|login|privacy|terms|contact)"
+                      r"|mailto:|tel:|https?://(www\.)?(twitter\.com|x\.com|facebook\.com|"
+                      r"linkedin\.com|instagram\.com|github\.com|youtube\.com|threads\.net|"
+                      r"tiktok\.com|t\.me|discord\.(gg|com)|bsky\.app|reddit\.com|"
+                      r"medium\.com|line\.me|wa\.me))", re.I)
+
 TAG_RE = re.compile(r"<[^>]+>")
 SCRIPT_STYLE_RE = re.compile(r"<(script|style)\b.*?</\1>", re.S | re.I)
 
@@ -96,6 +118,30 @@ def head_of(html):
 
 def inner_text(fragment):
     return re.sub(r"\s+", " ", TAG_RE.sub(" ", fragment)).strip()
+
+
+def hero_of(html):
+    """The fold, approximated: markup from the <h1> to the first <h2>. With no
+    <h2>, the first 40% of the body. Without an <h1>, the first 40% of the body."""
+    body = re.search(r"<body\b[^>]*>(.*)</body>", html, re.S | re.I)
+    b = body.group(1) if body else html
+    h1 = re.search(r"<h1\b", b, re.I)
+    if not h1:
+        return b[: int(len(b) * 0.4)]
+    start = h1.start()
+    h2 = re.search(r"<h2\b", b[start:], re.I)
+    end = start + (h2.start() if h2 else int(len(b) * 0.4))
+    return b[start:end]
+
+
+def norm_label(text):
+    return re.sub(r"[\s\W_]+", " ", text.lower()).strip()
+
+
+def word_count(text):
+    # CJK has no spaces; two characters is a fair stand-in for one word.
+    return (len(re.findall(r"[A-Za-z0-9'\u2019-]+", text)) +
+            len(re.findall(r"[\u4e00-\u9fff]", text)) // 2)
 
 
 def meta(html, key, attr="name"):
@@ -144,6 +190,72 @@ def check_promise(html, findings):
             break
 
 
+def check_headline(html, findings):
+    """One <h1>, short, specific, and not a slogan. Count and existence are
+    check_promise's job; this looks at the words."""
+    h1s = re.findall(r"<h1\b[^>]*>(.*?)</h1>", html, re.S | re.I)
+    if len(h1s) != 1:
+        return
+    t = inner_text(h1s[0])
+    low = t.lower()
+
+    n = word_count(t)
+    if n > 14:
+        findings.append(Finding(
+            "P1", "headline", "<h1>",
+            "The headline is about " + str(n) + " words. A headline you cannot say "
+            "in one breath is two headlines, and the visitor reads neither.",
+            "Cut to the outcome; move the mechanism and the audience into the subhead."))
+
+    hits = sorted({w for w in EMPTY_CLAIMS if w in low})
+    if hits:
+        findings.append(Finding(
+            "P1", "headline", "<h1>",
+            "Empty superlative in the headline (" + ", ".join(hits[:3]) + "). This is "
+            "the one line that must say something specific, and it says nothing.",
+            "Replace the superlative with the concrete result: a number, a time, a "
+            "before/after, a named integration."))
+
+    if low.rstrip().endswith(("?", "？")):
+        findings.append(Finding(
+            "P2", "headline", "<h1>",
+            "The headline is a question. Any question the visitor can answer 'no' "
+            "to ends the page for them.",
+            "State the outcome instead; keep the question for the problem section."))
+
+
+def check_fold(html, findings):
+    """What the visitor sees before scrolling: headline, subhead, one action."""
+    hero = hero_of(html)
+    if not re.search(r"<h1\b", hero, re.I):
+        return  # check_promise reports the missing headline
+
+    acts = [c for c in _cta_candidates(hero)
+            if c["text"] and not (c["href"] and NAV_LIKE.match(c["href"]))]
+    if not acts:
+        findings.append(Finding(
+            "P1", "fold", "between <h1> and first <h2>",
+            "No action above the fold. A visitor who arrives convinced has nothing "
+            "to click, and the rest have not been told what the page wants.",
+            "Put the primary CTA directly under the subhead, worded as the outcome."))
+    else:
+        targets = {(c["href"] or "form:" + norm_label(c["text"])) for c in acts}
+        if len(targets) > 1:
+            findings.append(Finding(
+                "P1", "fold", ", ".join(sorted(targets)[:3]),
+                str(len(targets)) + " different actions above the fold. The fold "
+                "has one job; two buttons means it has not decided which.",
+                "Keep one primary button; demote the other to a text link below it."))
+
+    paras = [inner_text(p) for p in re.findall(r"<p\b[^>]*>(.*?)</p>", hero, re.S | re.I)]
+    if not any(len(p) >= 40 for p in paras):
+        findings.append(Finding(
+            "P2", "fold", "under <h1>",
+            "Headline with no subhead. Who it is for and how it works are not "
+            "answered before the scroll.",
+            "Add one or two sentences under the <h1>: the audience and the mechanism."))
+
+
 def _cta_candidates(html):
     out = []
     for m in re.finditer(r"<(a|button)\b([^>]*)>(.*?)</\1>", html, re.S | re.I):
@@ -166,11 +278,8 @@ def check_cta(html, findings):
 
     # Which targets look like the conversion action rather than navigation?
     # "#start" jumps to the form and is a real call to action; a bare "#" is not.
-    nav_like = re.compile(r"^(#$|/?$|/(about|blog|docs|pricing|login|privacy|terms|contact)"
-                          r"|mailto:|tel:|https?://(www\.)?(twitter|x|facebook|linkedin|"
-                          r"instagram|github|youtube)\.com)", re.I)
     action = [c for c in ctas if c["text"] and
-              not (c["href"] and nav_like.match(c["href"] or ""))]
+              not (c["href"] and NAV_LIKE.match(c["href"] or ""))]
 
     targets = {}
     for c in action:
@@ -195,20 +304,16 @@ def check_cta(html, findings):
             'Use the outcome in the visitor\'s words: "Start my free trial", '
             '"Book the 20-minute demo".'))
 
-    # Is any action reachable before the reader scrolls? Approximate: within the
-    # first 40% of body markup.
-    body = re.search(r"<body\b[^>]*>(.*)</body>", html, re.S | re.I)
-    if body and action:
-        b = body.group(1)
-        cutoff = len(b) * 0.4
-        first = min((b.find(c["text"]) for c in action if c["text"] and c["text"] in b),
-                    default=-1)
-        if first < 0 or first > cutoff:
+    # The first action the reader meets and the last one should be the same words.
+    # Different wording reads as two offers, and the reader wonders which one they get.
+    if len(action) > 1:
+        first, last = norm_label(action[0]["text"]), norm_label(action[-1]["text"])
+        if first and last and first != last:
             findings.append(Finding(
-                "P2", "cta", "above the fold",
-                "No action appears in the first 40% of the markup. Readers who are "
-                "already convinced have nothing to click.",
-                "Repeat the primary CTA near the headline."))
+                "P2", "cta", repr(action[0]["text"]) + " vs " + repr(action[-1]["text"]),
+                "The first CTA and the closing CTA are worded differently. One action, "
+                "one wording, so the reader knows the last button is the same promise.",
+                "Use the same label in both places."))
 
 
 def check_language(html, findings):
@@ -276,6 +381,32 @@ def check_proof(html, findings):
             "Testimonial-shaped content with no attribution. An unattributed quote "
             "is treated as invented, so it costs trust rather than adding it.",
             "Add a real name, role and company in <cite>/<figcaption>, or drop it."))
+
+    # Social proof shaped like a crowd: "4.9/5", "10,000+ customers", a row of stars.
+    crowd = CROWD_RE.findall(text)
+    if crowd and not CITE_NEAR_RE.search(text) and not REVIEW_HOST_RE.search(html):
+        findings.append(Finding(
+            "P1", "proof", str(len(crowd)) + " rating/headcount claim(s)",
+            "A rating or a count of people with no source and no link to where it "
+            "lives. Unverifiable social proof is read as invented and costs trust.",
+            "Link the rating to the review site, or state what was counted and when."))
+
+    # A logo wall where the logos have no name. The reader cannot verify them,
+    # a screen reader cannot read them, and it is the most-faked proof there is.
+    logos = [i for i in imgs if re.search(r"logo", i, re.I)]
+    if len(logos) >= 3:
+        unnamed = 0
+        for i in logos:
+            alt = re.search(r'alt=["\']([^"\']*)["\']', i, re.I)
+            name = (alt.group(1) if alt else "").strip().lower()
+            if name in ("", "logo", "brand logo", "company logo", "customer logo", "client logo"):
+                unnamed += 1
+        if unnamed:
+            findings.append(Finding(
+                "P1", "proof", str(unnamed) + " of " + str(len(logos)) + " logo <img>",
+                "Logo wall with logos that have no name. A logo the visitor cannot "
+                "name proves nothing and is invisible to assistive technology.",
+                "Put the company name in alt, and only show logos you have permission to use."))
 
     stats = STAT_RE.findall(text)
     if stats and not CITE_NEAR_RE.search(text):
@@ -431,8 +562,9 @@ def audit(path):
     with open(path, "r", encoding="utf-8", errors="replace") as fh:
         html = fh.read()
     findings = []
-    for fn in (check_promise, check_cta, check_language, check_proof, check_form,
-               check_lcp, check_share, check_trust, check_measurement):
+    for fn in (check_promise, check_headline, check_fold, check_cta, check_language,
+               check_proof, check_form, check_lcp, check_share, check_trust,
+               check_measurement):
         fn(html, findings)
     return findings
 

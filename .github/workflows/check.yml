@@ -9,10 +9,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: The shipped template must pass the shipped checker
-        run: python3 scripts/check_landing.py assets/skeleton.html
+      - name: The shipped template must pass the shipped checker, strictly
+        run: python3 scripts/check_landing.py assets/skeleton.html --strict
       - name: The checker must reject a page with known problems
         run: |
           if python3 scripts/check_landing.py tests/known-bad.html; then
             echo "checker passed a page it should have failed"; exit 1
           fi
+      - name: The headline, fold and proof checks must fire on the fold fixture
+        run: |
+          python3 scripts/check_landing.py tests/known-bad-fold.html --json > out.json || true
+          for check in headline fold proof cta; do
+            grep -q "\"check\": \"$check\"" out.json || { echo "missing $check finding"; exit 1; }
+          done
