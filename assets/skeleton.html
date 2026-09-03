@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<!-- Replace every value below. The wording here is a worked example, not filler:
+     it shows the shape of a promise, not a phrase to keep. -->
+<title>Ship a landing page you can defend</title>
+<meta name="description" content="A starting skeleton for a landing page: one promise, one action, room for real proof, and no render-blocking requests. Passes check_landing.py on a clean checkout.">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Ship a landing page you can defend">
+<meta property="og:description" content="One promise, one action, room for real proof, and no render-blocking requests.">
+<meta property="og:image" content="/og.png"><!-- 1200x630, self-hosted -->
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- Critical CSS is inline on purpose: a remote stylesheet blocks the first paint
+     on a page whose whole job happens in the first five seconds. -->
+<style>
+  :root{
+    --ink:#191c1a; --ink-2:#525c56; --ink-3:#7c867f;
+    --bg:#fbfbfa; --surface:#fff; --line:#e2e6e2;
+    --accent:#14513f; --on-accent:#fff; --accent-soft:#e6efeb;
+    --max:64rem; --gap:1.5rem; --radius:10px;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans TC",sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --ink:#e9ede9; --ink-2:#a6b0a9; --ink-3:#7f8a83;
+    --bg:#101310; --surface:#171b18; --line:#272d29;
+    --accent:#67d2ad; --on-accent:#062219; --accent-soft:#152722;
+  }}
+  :root[data-theme="dark"]{
+    --ink:#e9ede9; --ink-2:#a6b0a9; --ink-3:#7f8a83;
+    --bg:#101310; --surface:#171b18; --line:#272d29;
+    --accent:#67d2ad; --on-accent:#062219; --accent-soft:#152722;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+    font-size:1.0625rem;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 1.25rem}
+  header,section,footer{padding:3.5rem 0}
+  h1{font-size:clamp(2rem,5vw,3.25rem);line-height:1.08;letter-spacing:-.02em;
+    margin:0 0 1rem;text-wrap:balance;max-width:18ch}
+  h2{font-size:clamp(1.4rem,3vw,1.9rem);line-height:1.2;letter-spacing:-.01em;
+    margin:0 0 .75rem;text-wrap:balance}
+  h3{font-size:1.0625rem;margin:0 0 .35rem}
+  p{margin:0 0 1rem;max-width:62ch;color:var(--ink-2)}
+  .lede{font-size:1.1875rem;color:var(--ink-2);max-width:52ch}
+  .row{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin-top:1.5rem}
+  .btn{display:inline-flex;align-items:center;justify-content:center;
+    min-height:48px;padding:0 1.5rem;border:0;border-radius:var(--radius);
+    background:var(--accent);color:var(--on-accent);font:inherit;font-weight:600;
+    text-decoration:none;cursor:pointer;transition:transform .12s ease}
+  .btn:active{transform:scale(.98)}
+  .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+  .aside{color:var(--ink-3);font-size:.9375rem}
+  .grid{display:grid;gap:var(--gap);grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));
+    margin-top:2rem}
+  .card{background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:1.25rem}
+  .band{background:var(--surface);border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line)}
+  form{display:grid;gap:1rem;max-width:26rem;margin-top:1.5rem}
+  label{display:block;font-size:.9375rem;font-weight:600;margin-bottom:.35rem}
+  input{width:100%;min-height:48px;padding:.6rem .8rem;font:inherit;
+    color:var(--ink);background:var(--surface);
+    border:1px solid var(--line);border-radius:var(--radius)}
+  :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  footer{border-top:1px solid var(--line);color:var(--ink-3);font-size:.9375rem}
+  footer a{color:inherit}
+  @media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important}}
+</style>
+</head>
+
+<body>
+
+<!-- ── Above the fold ──────────────────────────────────────────────────────
+     Four things, in this order: what it is, who it is for, why now, the action.
+     If a reader arrives already convinced, they must be able to act here. -->
+<header>
+  <div class="wrap">
+    <h1>Ship a landing page you can defend</h1>
+    <p class="lede">A skeleton with one promise, one action, and space kept open
+      for proof you actually have. Nothing here loads from a third party, so the
+      first paint is yours to control.</p>
+    <div class="row">
+      <a class="btn" href="#start">Start with this skeleton</a>
+      <span class="aside">MIT licensed &middot; no build step</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── The problem, in the reader's words ─────────────────────────────────
+     Say the thing they would say. If they do not recognise themselves in this
+     paragraph, nothing below matters. -->
+<section class="band">
+  <div class="wrap">
+    <h2>Most landing pages fail before the copy does</h2>
+    <p>Five buttons compete for one click. The headline names the product instead
+      of the promise. A stylesheet from another origin holds the first paint
+      hostage. The testimonial has no name attached, so the reader discounts it
+      and everything near it. None of that is a taste problem, and none of it
+      needs an opinion to find.</p>
+  </div>
+</section>
+
+<!-- ── What it does ───────────────────────────────────────────────────────
+     One card per claim. Each claim should be checkable, not adjectival. -->
+<section>
+  <div class="wrap">
+    <h2>What this gives you</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>One action, stated as an outcome</h3>
+        <p>The primary call to action appears above the fold and repeats once at
+          the end. Navigation links are text, not buttons.</p>
+      </div>
+      <div class="card">
+        <h3>Nothing blocks the first paint</h3>
+        <p>Critical CSS is inline, scripts are deferred, and images carry
+          dimensions so the text does not reflow as they land.</p>
+      </div>
+      <div class="card">
+        <h3>Slots for proof, not placeholders</h3>
+        <p>Proof sections ship empty with instructions, so an unfinished page
+          cannot be mistaken for a finished one.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Proof ──────────────────────────────────────────────────────────────
+     DELIBERATELY EMPTY. Fill it with something real or delete the section.
+     A quote needs a name, a role and a company in <cite>. A number needs what
+     was measured, over what sample, and when. An invented testimonial costs
+     more trust than an absent one.
+-->
+
+<!-- ── The action ─────────────────────────────────────────────────────────
+     Ask for the least that lets you make the next contact. Every extra field
+     is a reason to leave. -->
+<section class="band" id="start">
+  <div class="wrap">
+    <h2>Get the skeleton</h2>
+    <p>Two fields, because that is all it takes to send you a link.</p>
+    <form method="post" action="#">
+      <div>
+        <label for="lc-name">Your name</label>
+        <input id="lc-name" name="name" type="text" autocomplete="name" required>
+      </div>
+      <div>
+        <label for="lc-email">Work email</label>
+        <input id="lc-email" name="email" type="email" autocomplete="email"
+               inputmode="email" required>
+      </div>
+      <button class="btn" type="submit">Send me the skeleton</button>
+      <p class="aside">We use your address only to send the link.
+        <a href="/privacy">How we handle your data</a>.</p>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Your Organisation &middot; <a href="/about">About</a> &middot;
+      <a href="/contact">Contact</a> &middot; <a href="/privacy">Privacy</a></p>
+  </div>
+</footer>
+
+<!-- Analytics goes here, deferred. Define the conversion event before launch,
+     otherwise every later change to this page is a guess. -->
+<script defer src="/analytics.js"></script>
+
+</body>
+</html>

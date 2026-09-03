@@ -1,0 +1,18 @@
+name: check
+on: [push, pull_request]
+
+jobs:
+  skeleton-passes-its-own-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: The shipped template must pass the shipped checker
+        run: python3 scripts/check_landing.py assets/skeleton.html
+      - name: The checker must reject a page with known problems
+        run: |
+          if python3 scripts/check_landing.py tests/known-bad.html; then
+            echo "checker passed a page it should have failed"; exit 1
+          fi
