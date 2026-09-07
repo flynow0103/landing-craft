@@ -38,6 +38,7 @@ any entry in it. Then run the workflow in `SKILL.md` from Step 1.
 ```
 SKILL.md                       constraints + workflow: brief -> fold -> sequence -> build -> gate -> optimise
 scripts/check_landing.py       static checker, no dependencies, exit 1 on P0
+scripts/batch_review.py        the same checks over many pages, ranked into a scoreboard
 assets/skeleton.html           starting template; passes the checker on a clean checkout
 tests/                         pages the checker must reject (used by CI)
 references/
@@ -77,6 +78,24 @@ It finds what a parser can see:
 It cannot tell you whether the promise is true, whether the offer is any good,
 or whether the ad that sent the visitor said something else. A clean run means
 the mechanics are sound, nothing more.
+
+## Reviewing many pages at once
+
+A gallery's top 20, a competitor set, or a folder of drafts, on the same rules:
+
+```bash
+python3 scripts/batch_review.py --gallery https://example-gallery/popular --limit 20 --out report.md
+python3 scripts/batch_review.py --urls-file urls.txt --out report.md --json report.json
+python3 scripts/batch_review.py --files drafts/*.html
+```
+
+The scoreboard ranks pages by P0×10 + P1×3 + P2×1 and breaks out the four
+columns that decide conversion (headline, fold, cta, proof). Every fetched page
+is saved under `batch-pages/` so the judgement half of a review, the part no
+parser can do, has the HTML to read. `--gallery` is best effort: it takes the
+external sites a listing links to, in the listing's order, following one level
+of detail pages when the listing links to its own entries first. Pages behind
+bot protection are reported as not fetched, never guessed at.
 
 ## Installing
 

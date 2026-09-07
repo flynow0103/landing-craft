@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+batch-pages/
+batch.json
+report.md
+report.json

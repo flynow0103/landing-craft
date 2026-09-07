@@ -13,7 +13,7 @@ description: >
   proof, above-the-fold content, conversion rate, or what to A/B test first.
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   homepage: https://github.com/flynow0103/landing-craft
 ---
 
@@ -40,6 +40,12 @@ the proof, and the fold — and checks that the mechanics do not undermine them.
 - `/landing-craft brief`
   The user does not yet know what the page should be. Go to Step 0 before
   proposing anything.
+
+- `/landing-craft batch <urls, a urls file, or a gallery listing URL>`
+  Many pages at once: competitors, a gallery's top N, a folder of drafts. Run
+  `scripts/batch_review.py`, hand over the scoreboard, then do the judgement
+  review on the pages the user cares about, reading the saved HTML. Say
+  plainly that the scoreboard is the mechanical half only.
 
 ## Use when, and not when
 
@@ -239,6 +245,18 @@ It cannot tell you whether the promise is true, whether the offer is any good,
 or whether the ad that sent the visitor said something else. Report a clean
 run as "mechanics are sound" and nothing more.
 
+To compare many pages on the same rules (a gallery's top 20, a competitor set):
+
+```bash
+python3 scripts/batch_review.py --gallery https://example-gallery/popular --limit 20 --out report.md
+python3 scripts/batch_review.py --urls-file urls.txt --out report.md --json report.json
+python3 scripts/batch_review.py --files drafts/*.html
+```
+
+Each fetched page is saved under `batch-pages/` so the judgement review can
+read it. Sites behind bot protection will show as "could not be fetched";
+say so rather than guessing at them.
+
 ### Step 6 — Optimise, in order
 
 `references/cro-playbook.md`. The levers ranked by how much they move the
@@ -260,3 +278,4 @@ while the offer is unclear.
 - `references/performance-budget.md` — LCP, CLS, INP for a page that must load fast
 - `assets/skeleton.html` — starting template, passes the checker
 - `scripts/check_landing.py` — the gate
+- `scripts/batch_review.py` — the same gate over many pages, ranked

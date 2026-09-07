@@ -22,3 +22,7 @@ jobs:
           for check in headline fold proof cta; do
             grep -q "\"check\": \"$check\"" out.json || { echo "missing $check finding"; exit 1; }
           done
+      - name: The batch runner must rank the clean template above the bad fixtures
+        run: |
+          python3 scripts/batch_review.py --files assets/skeleton.html tests/known-bad.html tests/known-bad-fold.html --json batch.json > /dev/null
+          python3 -c "import json; r=json.load(open('batch.json'))['ranked']; assert r[0]['source'].endswith('skeleton.html'), r[0]"
