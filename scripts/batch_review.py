@@ -224,6 +224,75 @@ def markdown(rows, show_all):
     return "\n".join(out)
 
 
+HTML_CSS = """
+:root{--ink:#161a20;--ink-2:#4b5563;--bg:#fbfaf7;--surface:#fff;--line:#e3e0d8;--p0:#b42318;--p1:#b54708;--p2:#475467;--ok:#067647}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#eef0f3;--ink-2:#aab2bf;--bg:#0f1319;--surface:#161c25;--line:#27303d;--p0:#f97066;--p1:#f79009;--p2:#98a2b3;--ok:#47cd89}}
+:root[data-theme="dark"]{--ink:#eef0f3;--ink-2:#aab2bf;--bg:#0f1319;--surface:#161c25;--line:#27303d;--p0:#f97066;--p1:#f79009;--p2:#98a2b3;--ok:#47cd89}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,-apple-system,"Segoe UI","PingFang TC","Noto Sans TC",sans-serif}
+.wrap{max-width:72rem;margin:0 auto;padding:2rem 1.25rem}
+h1{font-size:1.6rem;margin:0 0 .25rem}h2{font-size:1.15rem;margin:2rem 0 .5rem}h3{font-size:1rem;margin:1.5rem 0 .25rem}
+p{color:var(--ink-2);max-width:70ch}
+.scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--line);white-space:nowrap}th{font-weight:600;color:var(--ink-2)}
+td.n{text-align:right}.P0{color:var(--p0);font-weight:700}.P1{color:var(--p1);font-weight:600}.P2{color:var(--p2)}.ok{color:var(--ok)}
+.bar{display:inline-block;height:.6rem;background:var(--p1);border-radius:2px;vertical-align:middle;margin-right:.4rem}
+details{border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:.6rem .9rem;margin:.5rem 0}
+summary{cursor:pointer;font-weight:600}li{margin:.35rem 0}.fix{color:var(--ink-2)}code{font-size:.9em}
+"""
+
+
+def html_report(rows, show_all):
+    e = lambda s: (str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+    ok = [r for r in rows if r["ok"]]
+    bad = [r for r in rows if not r["ok"]]
+    top = max([r["score"] for r in ok] + [1])
+    out = ["<title>Landing page scoreboard</title>", "<style>" + HTML_CSS + "</style>",
+           '<div class="wrap">', "<h1>Landing page scoreboard</h1>",
+           "<p>%d pages reviewed, %d could not be fetched. Score = P0×10 + P1×3 + P2×1, lower is better. "
+           "Mechanics only: a low score means the page does not undermine its own argument, not that the "
+           "argument is good.</p>" % (len(ok), len(bad)),
+           '<div class="scroll"><table><thead><tr><th>#</th><th>Page</th><th>Score</th><th>P0</th><th>P1</th>'
+           '<th>P2</th><th>headline</th><th>fold</th><th>cta</th><th>proof</th><th>other</th></tr></thead><tbody>']
+    for i, r in enumerate(ok, 1):
+        bc = r["by_check"]
+        other = sum(v for k, v in bc.items() if k not in FOCUS)
+        w = int(120 * r["score"] / top) if top else 0
+        out.append('<tr><td>%d</td><td><a href="%s">%s</a></td><td class="n"><span class="bar" style="width:%dpx"></span>%d</td>'
+                   '<td class="n %s">%d</td><td class="n %s">%d</td><td class="n P2">%d</td>'
+                   '<td class="n">%s</td><td class="n">%s</td><td class="n">%s</td><td class="n">%s</td><td class="n">%s</td></tr>' % (
+                       i, e(r["fetched_from"] or r["source"]), e(label(r)), w, r["score"],
+                       "P0" if r["P0"] else "", r["P0"], "P1" if r["P1"] else "", r["P1"], r["P2"],
+                       bc.get("headline", 0) or "·", bc.get("fold", 0) or "·", bc.get("cta", 0) or "·",
+                       bc.get("proof", 0) or "·", other or "·"))
+    out.append("</tbody></table></div>")
+    if bad:
+        out.append("<h2>Could not be fetched</h2><ul>")
+        for r in bad:
+            out.append("<li>%s — %s</li>" % (e(r["source"]), e(r["error"])))
+        out.append("</ul>")
+    out.append("<h2>Findings per page</h2>")
+    for i, r in enumerate(ok, 1):
+        shown = [f for f in r["findings"] if show_all or f["severity"] != "P2"]
+        hidden = len(r["findings"]) - len(shown)
+        out.append("<details%s><summary>%d. %s — score %d</summary>" % (" open" if i <= 3 else "", i, e(label(r)), r["score"]))
+        if r["saved"]:
+            out.append("<p>Saved HTML: <code>%s</code></p>" % e(r["saved"]))
+        if not shown:
+            out.append('<p class="ok">no %sfindings</p>' % ("" if show_all else "P0/P1 "))
+        else:
+            out.append("<ul>")
+            for f in shown:
+                out.append('<li><span class="%s">[%s] %s</span> — %s%s</li>' % (
+                    f["severity"], f["severity"], e(f["check"]), e(f["message"]),
+                    ('<div class="fix">fix: %s</div>' % e(f["fix"])) if f["fix"] else ""))
+            out.append("</ul>")
+        if hidden:
+            out.append("<p>%d P2 finding(s) hidden; pass --all to include them.</p>" % hidden)
+        out.append("</details>")
+    out.append("</div>")
+    return "\n".join(out)
+
+
 # ------------------------------------------------------------------ main
 
 def main():
@@ -237,6 +306,7 @@ def main():
     ap.add_argument("--save-dir", default="batch-pages")
     ap.add_argument("--out", help="write the Markdown scoreboard here instead of stdout")
     ap.add_argument("--json", help="also write the full report as JSON")
+    ap.add_argument("--html", help="also write a standalone HTML report")
     ap.add_argument("--all", action="store_true", help="show P2 findings per page too")
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--keep-order", action="store_true",
@@ -291,6 +361,10 @@ def main():
         log("wrote " + args.out)
     else:
         print(md)
+    if args.html:
+        with open(args.html, "w", encoding="utf-8") as fh:
+            fh.write(html_report(rows, args.all))
+        log("wrote " + args.html)
     if args.json:
         with open(args.json, "w", encoding="utf-8") as fh:
             json.dump({"weights": WEIGHT, "ranked": rows}, fh, indent=2, ensure_ascii=False)

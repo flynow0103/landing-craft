@@ -39,6 +39,8 @@ any entry in it. Then run the workflow in `SKILL.md` from Step 1.
 SKILL.md                       constraints + workflow: brief -> fold -> sequence -> build -> gate -> optimise
 scripts/check_landing.py       static checker, no dependencies, exit 1 on P0
 scripts/batch_review.py        the same checks over many pages, ranked into a scoreboard
+scripts/generate_landing.py    brief in, page out; refuses to invent what the brief lacks
+examples/brief.trace.json      a complete brief to copy from
 assets/skeleton.html           starting template; passes the checker on a clean checkout
 tests/                         pages the checker must reject (used by CI)
 references/
@@ -79,6 +81,29 @@ It cannot tell you whether the promise is true, whether the offer is any good,
 or whether the ad that sent the visitor said something else. A clean run means
 the mechanics are sound, nothing more.
 
+## Generating a page from a brief
+
+```bash
+python3 scripts/generate_landing.py --init brief.json --shape lead    # waitlist | saas | app | lead | sales | event | cause
+# fill it in: headline, subhead, one true credibility line, the action, sections, form, footer, analytics
+python3 scripts/generate_landing.py brief.json -o page.html --check --strict
+```
+
+The brief carries every word the page will show. The generator lays them out
+for the shape you picked, in one of three sober style presets (`editorial`,
+`product`, `bold`), with the mechanics the checker gates already wired: one
+action worded identically at the fold and at the close, labelled fields with
+`autocomplete`, Open Graph, a privacy link beside the form, inline CSS, no
+render-blocking requests, light and dark themes.
+
+It writes no copy and refuses to fill a gap with filler. A headline built on
+an empty superlative, a CTA that says "Submit", a testimonial with no name, a
+number with no sample or date, placeholder text anywhere: each is refused
+with the field named. No proof in the brief means no proof on the page,
+marked with a comment. That is the difference between this and an AI page
+builder: the builder's job is to make something appear; this tool's job is
+to make sure nothing appears that you cannot stand behind.
+
 ## Reviewing many pages at once
 
 A gallery's top 20, a competitor set, or a folder of drafts, on the same rules:
@@ -86,7 +111,7 @@ A gallery's top 20, a competitor set, or a folder of drafts, on the same rules:
 ```bash
 python3 scripts/batch_review.py --gallery https://example-gallery/popular --limit 20 --out report.md
 python3 scripts/batch_review.py --urls-file urls.txt --out report.md --json report.json
-python3 scripts/batch_review.py --files drafts/*.html
+python3 scripts/batch_review.py --files drafts/*.html --html report.html
 ```
 
 The scoreboard ranks pages by P0×10 + P1×3 + P2×1 and breaks out the four

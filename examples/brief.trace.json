@@ -1,0 +1,100 @@
+{
+  "_about": "Example brief: an on-chain fund-tracing service for scam victims. Every word here is the author's own; the proof section is deliberately empty because no proof was available at the time.",
+  "lang": "zh-Hant-TW",
+  "site_name": "Bitcool 幣金庫・加密貨幣學院",
+  "shape": "lead",
+  "style": "editorial",
+  "meta": {
+    "title": "鏈上幣流追蹤 — 把資金流向做成可查證的證據",
+    "description": "依交易 hash 逐層追出詐騙資金流向，產出附 SHA-256 完整性雜湊的證據截圖與 Excel 報告。支援 7 條鏈。我們不承諾追回款項，只承諾流向可被第三方複驗。",
+    "og_image": "/og.png",
+    "canonical": ""
+  },
+  "hero": {
+    "headline": "把資金去向，\n變成第三方可以複驗的證據",
+    "subhead": "給被詐騙、手上只剩一串交易 hash 的人。我們逐層追出資金去向，產出每張截圖都附 SHA-256 雜湊的證據檔與 Excel 報告，讓檢警、律師或你自己，都能各自驗證那份報告沒有被動過。",
+    "signal": "鏈上資料取自 Routescan（EVM 系）與 TronScan（TRC20）的公開介面；資料源在報告中具名列出，任何人都能回頭查。",
+    "after_cta": "評估免費。無法追的案子我們會直接說。"
+  },
+  "action": { "label": "提交案件，取得可行性評估", "href": "" },
+  "sections": [
+    {
+      "type": "problem",
+      "title": "你現在最可能卡在這裡",
+      "paragraphs": [
+        "錢轉出去了，你手上只有一串交易 hash 和一個收款地址。區塊鏈瀏覽器打得開，但看到的是一層又一層的轉出，分不清哪一筆是洗、哪一筆進了交易所、哪一筆跨鏈跑掉。",
+        "就算你自己看懂了，截圖貼進報案資料，承辦人員也無從確認那張圖是不是你 P 的。沒有完整性佐證的截圖，在程序上很難當成證據使用。"
+      ]
+    },
+    {
+      "type": "mechanism",
+      "title": "實際怎麼做",
+      "intro": "六個步驟，每一步都留下可回溯的紀錄。這是系統實際執行的流程，不是簡化說法。",
+      "steps": [
+        { "title": "案件建檔", "text": "受害人、金額、時間、報案編號建立成獨立案件。" },
+        { "title": "依交易 hash 定位", "text": "從你提供的 hash 定位到鏈上那一筆交易，確認發生時間與金額。" },
+        { "title": "逐層判讀轉出", "text": "沿著收款地址往下展開，一層一層看資金分流到哪些地址。" },
+        { "title": "分類決策", "text": "每個節點標記為中心化交易所（CEX）、去中心化交易所（DEX）或跨鏈橋。" },
+        { "title": "證據截圖", "text": "對關鍵節點擷取畫面，每張計算 SHA-256 並隨檔案一起保存。" },
+        { "title": "Excel 報告輸出", "text": "把路徑、分類與雜湊值整理成一份可送出的表格。" }
+      ],
+      "note": "目前支援：Bitcoin、Ethereum、Tron、BSC、Solana、Polygon、Arbitrum。"
+    },
+    {
+      "type": "text",
+      "title": "為什麼這份報告可以被複驗",
+      "paragraphs": [
+        "每一張證據截圖在產出當下就計算 SHA-256，雜湊值寫進報告，檔案本身以標頭 x-evidence-sha256 一併送出。任何人拿到檔案，自己算一次雜湊，跟報告上的值比對，就知道這張圖從產出到現在有沒有被修改過。",
+        "這不需要相信我們。這是你自己就能跑的一行指令：shasum -a 256 evidence/tron/0x8f2c….png，再比對報告的「SHA-256（完整性）」欄位。"
+      ]
+    },
+    {
+      "type": "proof",
+      "title": "已完成的案件",
+      "intro": "",
+      "quotes": [],
+      "numbers": [],
+      "_note": "Deliberately empty. Candidates when they exist: a redacted real report with its hash, a case count with the period it covers."
+    },
+    {
+      "type": "objections",
+      "title": "我們不做什麼",
+      "intro": "這個類別充滿二次詐騙，而二次詐騙的共同特徵是承諾追回。所以先把界線講清楚：",
+      "callout": {
+        "title": "我們不承諾追回任何款項。",
+        "text": "幣流追蹤產出的是資金去向與證據，不是資金。錢能不能拿回來，取決於資金最後停在哪個機構、該機構所在司法管轄區，以及檢警的後續作為，這三件事都不在我們手上。任何人向你保證能追回，那本身就是警訊。"
+      },
+      "items": [
+        { "q": "那追蹤有什麼用？", "a": "資金若進入有 KYC 的中心化交易所，一份具名到節點、附完整性雜湊的報告，是檢警發函與交易所配合凍結的依據。追蹤把「不知道錢在哪」變成「知道錢在哪、由誰保管」。" },
+        { "q": "如果錢已經跨鏈或進了混幣器？", "a": "那我們會在評估階段就告訴你追不下去，並說明斷在哪一層。我們不會為了接案而讓你抱期待。" },
+        { "q": "費用怎麼算？", "a": "可行性評估免費。評估後如果可以往下做，會先給你固定金額的報價與交付內容，確認後才開始。不抽成、不按追回金額計費，按成果抽成的模式會誘導我們高估可行性。" },
+        { "q": "我需要準備什麼？", "a": "一筆交易 hash 或收款地址，加上大概的時間與金額。沒有 hash 也可以先來問，多數情況能從交易所出金紀錄反推。" }
+      ]
+    }
+  ],
+  "closing": {
+    "title": "提交案件",
+    "text": "兩個欄位。收到後我們會先判斷這個案子追不追得下去，再回覆你。"
+  },
+  "form": {
+    "action": "/intake",
+    "method": "post",
+    "fields": [
+      { "name": "contact", "label": "聯絡方式（Email 或 Telegram）", "type": "text", "autocomplete": "email", "required": true, "placeholder": "you@example.org 或 @yourhandle" },
+      { "name": "hash", "label": "交易 hash 或收款地址", "type": "text", "autocomplete": "off", "required": true, "placeholder": "0x… 或 T…" }
+    ],
+    "note": "我們只用這些資訊回覆你的案件評估。",
+    "privacy_label": "資料處理方式",
+    "privacy_href": "/privacy"
+  },
+  "footer": {
+    "links": [
+      { "label": "Threads @bitcool2026", "href": "https://www.threads.com/@bitcool2026" },
+      { "label": "關於我們", "href": "/about" },
+      { "label": "聯絡", "href": "/contact" },
+      { "label": "隱私權", "href": "/privacy" }
+    ],
+    "legal": "追蹤服務產出資金流向與證據報告，不提供投資建議，亦不承諾追回款項。"
+  },
+  "analytics": { "src": "/umami", "attrs": { "data-website-id": "" } }
+}

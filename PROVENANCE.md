@@ -30,6 +30,15 @@ pages (MIT) as a place to find free templates. Nothing from that repository is
 vendored here; it is referenced by name and URL, and the evaluation method for
 templates is this project's own.
 
+## The generator
+
+`scripts/generate_landing.py` was written for this repository. Its shape
+(a brief in, a page out, the page gated by the same checker) is the obvious
+shape for the job and is shared with commercial AI page builders in the
+general sense only; none of their code, templates, prompts or copy was
+seen or used. The three style presets are original CSS. Every string the
+generated page shows comes from the user's brief.
+
 ## What is referenced rather than reproduced
 
 The guidance cites publicly documented standards and facts. These are referred

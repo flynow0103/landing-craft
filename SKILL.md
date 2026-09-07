@@ -13,7 +13,7 @@ description: >
   proof, above-the-fold content, conversion rate, or what to A/B test first.
 license: MIT
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   homepage: https://github.com/flynow0103/landing-craft
 ---
 
@@ -40,6 +40,15 @@ the proof, and the fold — and checks that the mechanics do not undermine them.
 - `/landing-craft brief`
   The user does not yet know what the page should be. Go to Step 0 before
   proposing anything.
+
+- `/landing-craft generate <brief.json>`
+  Build the page from a brief with `scripts/generate_landing.py`. The brief
+  carries every word; the generator writes no copy and refuses gaps it will
+  not fill (a superlative headline, a mechanism-word CTA, an unattributed
+  quote, a number without its method, placeholder text). If the user has no
+  brief yet, `--init` writes an annotated one for their page shape; fill it
+  from the workflow below, then generate. Never fill a brief field with
+  something the user did not give you.
 
 - `/landing-craft batch <urls, a urls file, or a gallery listing URL>`
   Many pages at once: competitors, a gallery's top N, a folder of drafts. Run
@@ -221,10 +230,21 @@ worded the same way. Cut any section that removes no objection.
 
 ### Step 4 — Build
 
-Static HTML unless the page genuinely needs interactivity. Start from
-`assets/skeleton.html`, which passes the checker on a clean checkout. Inline
-the critical CSS. Budget: `references/performance-budget.md`. CTA wording,
-form friction and what to delete: `references/conversion-mechanics.md`.
+Static HTML unless the page genuinely needs interactivity. Two ways in:
+
+- **From a brief.** Put the words from Steps 1–3 into a brief JSON
+  (`scripts/generate_landing.py --init brief.json --shape lead` writes an
+  annotated one) and build with `generate_landing.py brief.json -o page.html
+  --check`. Three sober style presets (`editorial`, `product`, `bold`), a
+  left-aligned fold with a signal slot, the CTA repeated verbatim at the
+  close, labelled fields, Open Graph, inline CSS. The generator refuses a
+  brief that breaks a constraint and says which.
+- **By hand.** Start from `assets/skeleton.html`, which passes the checker
+  on a clean checkout.
+
+Either way: inline the critical CSS, budget per
+`references/performance-budget.md`, CTA wording and form friction per
+`references/conversion-mechanics.md`.
 
 ### Step 5 — Run the checker before you hand over
 
@@ -277,5 +297,7 @@ while the offer is unclear.
 - `references/cro-playbook.md` — levers in order, fold checklist, social proof placement, A/B priorities
 - `references/performance-budget.md` — LCP, CLS, INP for a page that must load fast
 - `assets/skeleton.html` — starting template, passes the checker
+- `scripts/generate_landing.py` — brief in, page out, nothing invented
+- `examples/brief.trace.json` — a complete brief to copy from
 - `scripts/check_landing.py` — the gate
 - `scripts/batch_review.py` — the same gate over many pages, ranked

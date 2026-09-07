@@ -26,3 +26,15 @@ jobs:
         run: |
           python3 scripts/batch_review.py --files assets/skeleton.html tests/known-bad.html tests/known-bad-fold.html --json batch.json > /dev/null
           python3 -c "import json; r=json.load(open('batch.json'))['ranked']; assert r[0]['source'].endswith('skeleton.html'), r[0]"
+      - name: The generator must build a page from the example brief that passes strictly
+        run: python3 scripts/generate_landing.py examples/brief.trace.json -o gen.html --check --strict
+      - name: The generator must refuse a brief with superlatives, a mechanism CTA, unattributed proof
+        run: |
+          if python3 scripts/generate_landing.py tests/brief.bad.json -o bad.html 2>refused.txt; then
+            echo "generator built a page it should have refused"; exit 1
+          fi
+          grep -q "empty superlative" refused.txt && grep -q "names the mechanism" refused.txt && grep -q "no name and role" refused.txt
+      - name: The batch runner must write an HTML report
+        run: |
+          python3 scripts/batch_review.py --files assets/skeleton.html tests/known-bad.html --html report.html > /dev/null
+          grep -q "Landing page scoreboard" report.html

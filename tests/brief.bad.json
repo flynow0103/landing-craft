@@ -1,0 +1,13 @@
+{
+  "lang": "en", "site_name": "Acme", "shape": "saas", "style": "product",
+  "meta": {"title": "Acme", "description": "", "og_image": ""},
+  "hero": {"headline": "The revolutionary next-generation platform", "subhead": "", "signal": ""},
+  "action": {"label": "Submit", "href": "/signup"},
+  "sections": [
+    {"type": "proof", "title": "Loved by thousands",
+     "quotes": [{"quote": "This changed everything for our team and we could not be happier.", "name": "John Doe", "role": ""}],
+     "numbers": [{"value": "40%", "what": "faster", "sample": "", "when": ""}]}
+  ],
+  "closing": {"title": "Ready?"},
+  "form": null, "footer": {"links": []}, "analytics": null
+}
